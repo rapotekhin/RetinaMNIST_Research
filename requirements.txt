@@ -1,1 +1,13 @@
-pip install torch==1.8.1+cpu torchvision==0.9.1+cpu torchaudio==0.8.1 -f https://download.pytorch.org/whl/torch_stable.html
+torch==1.8.1+cpu 
+torchvision==0.9.1+cpu 
+torchaudio==0.8.1 
+-f https://download.pytorch.org/whl/torch_stable.html
+timm==0.4.9
+tqdm==4.60.0
+scikit-learn==0.24.1
+scipy==1.7.0
+Pillow==8.2.0
+opencv-python==4.5.2.52
+numpy==1.18.5
+medmnist==2.0.2
+albumentations==0.5.2

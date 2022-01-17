@@ -1,20 +1,14 @@
-from typing import Tuple
-from tqdm import tqdm
+
+import os, random, gc
 import numpy as np
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.utils.data as data
-import torchvision.transforms as transforms
-import gc
-import os, random
-from PIL import Image
 
-import timm
-
-import medmnist
-from medmnist import INFO, Evaluator
-from medmnist.dataset import MedMNIST2D
+from tqdm import tqdm
+from medmnist import Evaluator
 
 from models.RetinaMNISTModel import Net
 from utils.Datasets.RetinaMNISTDataset import RetinaMNISTDataset

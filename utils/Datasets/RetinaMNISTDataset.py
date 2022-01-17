@@ -1,21 +1,11 @@
-
-import cv2
-import pandas as pd
-import numpy as np
 import os
-
+import numpy as np
+import cv2
 from collections import Counter
 
-import torch
-import torch.nn.functional as F
-from torch.utils.data import Dataset
-
-from PIL import Image
-
 import medmnist
-from medmnist import INFO, Evaluator
-from medmnist.dataset import MedMNIST2D
-from medmnist.info import INFO, HOMEPAGE, DEFAULT_ROOT
+from medmnist import INFO
+from medmnist.info import INFO, DEFAULT_ROOT
 
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
