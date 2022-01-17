@@ -4,7 +4,6 @@ import cv2
 from collections import Counter
 
 import medmnist
-from medmnist import INFO
 from medmnist.info import INFO, DEFAULT_ROOT
 
 import albumentations as A
@@ -28,43 +27,11 @@ class RetinaMNISTDataset(DataClass):
         :param target_transform: bool
         '''
 
+        super(RetinaMNISTDataset, self).__init__(split, None, target_transform, download, as_rgb, root)
+
         self.args = args
-        self.info = INFO[self.flag]
-        self.nb_classes = self.args['nb_classes']
-
-        if root is not None and os.path.exists(root):
-            self.root = root
-        else:
-            raise RuntimeError("Failed to setup the default `root` directory. " +
-                               "Please specify and create the `root` directory manually.")
-
-        if download:
-            self.download()
-
-        if not os.path.exists(
-                os.path.join(self.root, "{}.npz".format(self.flag))):
-            raise RuntimeError('Dataset not found. ' +
-                               ' You can set `download=True` to download it')
-
-        npz_file = np.load(os.path.join(self.root, "{}.npz".format(self.flag)))
-
-        self.split = split
         self.augment = augment
-        self.target_transform = target_transform
-        self.as_rgb = as_rgb
-
-        if self.split == 'train':
-            self.imgs = npz_file['train_images']
-            self.labels = npz_file['train_labels']
-        elif self.split == 'val':
-            self.imgs = npz_file['val_images']
-            self.labels = npz_file['val_labels']
-        elif self.split == 'test':
-            self.imgs = npz_file['test_images']
-            self.labels = npz_file['test_labels']
-        else:
-            raise ValueError
-
+        self.nb_classes = self.args['nb_classes']
         self.transform = self._get_transforms()
 
 
@@ -79,7 +46,6 @@ class RetinaMNISTDataset(DataClass):
 
         augmented = self.transform(image=img)
         img = augmented['image']
-
 
         if self.target_transform is not None:
             target = self.target_transform(target)
