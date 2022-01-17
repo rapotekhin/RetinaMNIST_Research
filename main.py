@@ -8,12 +8,10 @@ def main(args: dict):
     processor.run()
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='REtinaMNIST: research')
+    parser = argparse.ArgumentParser(description='RetinaMNIST: Research')
 
     # Base parameters
-    parser.add_argument('--mode', help='', choices=['train',
-                                                    'evaluate'],
-                                                    default='train')
+    parser.add_argument('--mode', help='', choices=['train'], default='train')
     parser.add_argument('--path_to_save', dest='path_to_save', type=str,
                         help='path to save models', default='./logs')
     parser.add_argument('--model_name', dest='model_name', type=str,
@@ -24,16 +22,16 @@ if __name__ == '__main__':
     parser.add_argument('--nb_classes', dest='nb_classes', type=int, help='nb_classes', default=5)
 
     # Hyperparameter
-    parser.add_argument('--augment', dest='augment', type=lambda x: bool(strtobool(x)), help='augment', default=True)
+    parser.add_argument('--augment', dest='augment', type=lambda x: bool(strtobool(x)), help='augment', default=False)
     parser.add_argument('--dropout', dest='dropout', type=float, help='dropout prop', default=0.0)
     parser.add_argument('--label_smoothing', dest='label_smoothing', type=str, 
                         choices=['norm', 'classic', None], default=None)
     parser.add_argument('--loss', dest='loss', type=str,
-                        help='Loss function', choices=['focal_loss', 'cross_entropy'], default='focal_loss')
+                        help='Loss function', choices=['focal_loss', 'cross_entropy'], default='cross_entropy')
     parser.add_argument('--lr', dest='lr', type=float, help='lr', default=0.001)
     parser.add_argument('--scheduler', dest='scheduler', type=str,
                         help='lr scheduler, MultiStepLR - default in the paper', 
-                        choices=['MultiStepLR', 'ExponentialLR', 'ReduceLROnPlateau', 'CosineAnnealingLR'], default='ExponentialLR')
+                        choices=['MultiStepLR', 'ExponentialLR', 'ReduceLROnPlateau', 'CosineAnnealingLR'], default='MultiStepLR')
     parser.add_argument('--optimizer', dest='optimizer', type=str,
                         help='optimizer', choices=['Adam', 'AdamW', 'RMSprop'], default='Adam')
     parser.add_argument('--activation', dest='activation', type=str,
@@ -41,7 +39,7 @@ if __name__ == '__main__':
 
     # Advanced Augmentations
     parser.add_argument('--cutmix_rate', dest='cutmix_rate', type=float, help='cutmix_rate', default=0.0)
-    parser.add_argument('--mixup_rate', dest='mixup_rate', type=float, help='mixup_rate', default=0.75)
+    parser.add_argument('--mixup_rate', dest='mixup_rate', type=float, help='mixup_rate', default=0.0)
 
     # Augmentations
     parser.add_argument('--Transpose', dest='Transpose', type=float, help='Transpose', default=0.5)
