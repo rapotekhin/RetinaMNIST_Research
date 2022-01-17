@@ -85,6 +85,8 @@ Resnet18 (28x28):
 
 __ACC: 0.540 -> 0.545__; AUC: 0.759 -> 0.759
 
+```python main.py --augment True --loss focal_loss --scheduler ExponentialLR ```
+
 ## Cutmix augmentation
 best result for prop = 0.5
 Resnet18 (28x28):
@@ -93,6 +95,8 @@ Resnet18 (28x28):
 
 ACC: 0.545 -> 0.545; AUC: 0.759 -> 0.757
 
+```python main.py --augment True --loss focal_loss --scheduler ExponentialLR --cutmix_rate 0.5```
+
 ## Mixup augmentation
 best result for prop = 0.25
 Resnet18 (28x28):
@@ -100,6 +104,8 @@ Resnet18 (28x28):
 - test_best_acc 0.51, test_best_auc 0.732
 
 ACC: 0.545 -> 0.510; AUC: 0.759 -> 0.732
+
+```python main.py --augment True --loss focal_loss --scheduler ExponentialLR --mixup_rate 0.25```
 
 # Training ResNet-50 (28) with best parameters
 Resnet50 (28x28):
