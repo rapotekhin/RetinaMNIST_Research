@@ -25,5 +25,5 @@ class WeightedFocalLoss(nn.Module):
         targets = targets.type(torch.long)
         at = self.alpha.gather(0, targets.data.view(-1))
         pt = torch.exp(-BCE_loss)
-        F_loss = at*(1-pt)**self.gamma * BCE_loss
+        F_loss = 100*at*(1-pt)**self.gamma * BCE_loss
         return F_loss.mean()

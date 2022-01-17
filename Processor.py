@@ -20,7 +20,7 @@ class Processor:
             print("BEGIN TRAINING")
             self._train()
         elif self.args['mode'] == 'evaluate':
-            print("BEGIN EVALUATION ON TEST DATASET")
+            print("BEGIN EVALUATION")
             self._evaluate()
         else:
             raise ValueError('Unknown mode: {}'.format(self.args['mode']))

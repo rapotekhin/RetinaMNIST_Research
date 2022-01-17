@@ -40,6 +40,7 @@ class RetinaMNISTDataset(DataClass):
 
         self.args = args
         self.info = INFO[self.flag]
+        self.nb_classes = self.args['nb_classes']
 
         if root is not None and os.path.exists(root):
             self.root = root
@@ -76,8 +77,6 @@ class RetinaMNISTDataset(DataClass):
 
         self.transform = self._get_transforms()
 
-        self.dataset_destribution = self.get_labels_destribution()
-        self.nb_classes = len(self.dataset_destribution.keys())
 
     def __getitem__(self, index):
         '''
@@ -87,35 +86,71 @@ class RetinaMNISTDataset(DataClass):
         '''
         img, target = self.imgs[index], self.labels[index].astype(int)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        # img = Image.fromarray(img)
-
-        # if self.as_rgb:
-        #     img = img.convert('RGB')
 
         augmented = self.transform(image=img)
         img = augmented['image']
 
-        # if self.target_transform:
-        #     target = self._numpy_one_hot(target, num_classes=self.nb_classes)
-        #     target = np.convolve(target,[0.05, 0.9, 0.05], 'same')
 
         if self.target_transform is not None:
             target = self.target_transform(target)
-    
+
+        target = self._numpy_one_hot(target, num_classes=self.nb_classes)
+
+        if self.args['label_smoothing'] == 'norm' and self.split == 'train':
+            target = self._label_smoothing_norm(target)
+        elif self.args['label_smoothing'] == 'classic' and self.split == 'train':
+            target = self._label_smoothing_classic(target)
+        else:
+            pass
+
         return img, target
 
-    def get_labels_destribution(self) -> Counter:
-        return Counter(self.labels.flatten().tolist())
+    def get_labels_inverse_destribution(self) -> np.ndarray:
+        cnt = Counter(self.labels.flatten().tolist())
+        destribution = np.array(list(cnt.values()), dtype=int)
+        labels_hist, _ = np.histogram(destribution, bins=self.nb_classes)
+
+        return 1 - labels_hist / np.sum(labels_hist)
 
     def _numpy_one_hot(self, a, num_classes) -> np.ndarray:
         return np.squeeze(np.eye(num_classes)[a.reshape(-1)])
+
+    def _label_smoothing_classic(self, targets: np.ndarray, smoothing: float = 0.2) -> np.ndarray:
+        """
+        Summary: Function for apply classic label smoothing algorithm.
+        Parameters:
+            targets: np.ndarray - Ground Truth one hot encoding targets with shape (batch_size, nb_classes)
+            nb_classes: int - number of classes in dataset
+            smoothing: float - if smoothing == 0, it's one-hot method; if 0 < smoothing < 1, it's smooth method
+        Return:
+            targets: np.ndarray - smooth Ground Truth vector with shape (batch_size, nb_classes)
+        References:
+            https://arxiv.org/abs/1906.02629
+        """
+        assert 0 <= smoothing < 1
+
+        targets *= 1.0 - smoothing
+        targets += smoothing / (self.nb_classes - 1)
+
+        return targets
+
+    def _label_smoothing_norm(self, targets: np.ndarray) -> np.ndarray:
+        """
+        Summary: Function for apply classic label smoothing algorithm.
+        Parameters:
+            targets: np.ndarray - Ground Truth one hot encoding targets with shape (batch_size, nb_classes)
+        Return:
+            targets: np.ndarray - smooth Ground Truth vector with shape (batch_size, nb_classes)
+        """
+
+        return np.convolve(targets, [0.05, 0.9, 0.05], 'same')
 
     def _get_transforms(self) -> A.Compose:
 
         if self.split == 'train' and self.augment:
             return A.Compose([
 
-                A.Resize(self.args['img_size'], self.args['img_size'], p=self.args['Resize']),
+                A.Resize(self.args['img_size'], self.args['img_size'], p=1.0),
 
                 A.Transpose(p=self.args['Transpose']),
                 A.HorizontalFlip(p=self.args['HorizontalFlip']),

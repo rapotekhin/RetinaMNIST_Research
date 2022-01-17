@@ -45,20 +45,32 @@ class SimpleTrainer(AbstractTrainer):
         val_loader = data.DataLoader(dataset=val_dataset, batch_size=self.args['batch_size'], shuffle=False)
         test_loader = data.DataLoader(dataset=test_dataset, batch_size=2*self.args['batch_size'], shuffle=False)
 
+        labels_inverse_destribution = train_dataset.get_labels_inverse_destribution()
+
         if self.args['loss'] == "focal_loss":
-            criterion = WeightedFocalLoss(1, 2)
+            criterion = WeightedFocalLoss(alpha=labels_inverse_destribution, gamma=3)
         elif self.args['loss'] == "cross_entropy":
-            criterion = nn.CrossEntropyLoss()
+            criterion = nn.BCELoss()
         else:
             raise ValueError('Unknown loss: {}'.format(self.args['loss']))
 
         if self.args['optimizer'] == "Adam":
             optimizer = optim.Adam(net.parameters(), lr=self.args['lr'])
+        elif self.args['optimizer'] == "AdamW":
+            optimizer = optim.AdamW(net.parameters(), lr=self.args['lr'])
+        elif self.args['optimizer'] == "RMSprop":
+            optimizer = optim.RMSprop(net.parameters(), lr=self.args['lr'])
         else:
             raise ValueError('Unknown optimizer: {}'.format(self.args['optimizer']))
 
         if self.args['scheduler'] == "MultiStepLR":
             scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=[50,75], gamma=0.1)
+        elif self.args['scheduler'] == "ExponentialLR":
+            scheduler = optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.95)
+        elif self.args['scheduler'] == "ReduceLROnPlateau":
+            scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', patience=5)
+        elif self.args['scheduler'] == "CosineAnnealingLR":
+            scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=self.args['epochs'], eta_min=1e-5)
         else:
             raise ValueError('Unknown scheduler: {}'.format(self.args['scheduler']))
 
@@ -87,7 +99,11 @@ class SimpleTrainer(AbstractTrainer):
         dataset_size = 0
         running_loss = 0.0
 
+        early_stopping = 0
         for epoch in range(self.args['epochs']):
+
+            if early_stopping == 10:
+                break
 
             net.train()
 
@@ -101,7 +117,7 @@ class SimpleTrainer(AbstractTrainer):
                 optimizer.zero_grad()
                 outputs = net(inputs)
                 
-                targets = targets.squeeze().to(torch.int64)
+                targets = targets.squeeze().to(torch.float)
                 loss = criterion(outputs, targets)
                 
                 loss.backward()
@@ -113,17 +129,23 @@ class SimpleTrainer(AbstractTrainer):
 
                 bar.set_postfix(Epoch=epoch, Train_Loss=epoch_loss, LR=optimizer.param_groups[0]['lr'])
 
-            scheduler.step()
             gc.collect()
-
             val_acc, val_auc = self._eval(net, val_loader, 'val')
 
+            if self.args['scheduler'] == 'ReduceLROnPlateau':
+                scheduler.step(val_auc)
+            else:
+                scheduler.step()
+
             if val_auc >= best_auc:
+                early_stopping = 0
                 print(f"Validation AUC Improved ({best_auc} ---> {val_auc}), Accuracy: {val_acc}")
                 best_auc = val_auc
                 best_acc = val_acc 
 
                 torch.save({'model': net.state_dict()}, 'model_best.pth')
+            else:
+                early_stopping += 1
 
         return best_acc, best_auc
 
@@ -137,14 +159,14 @@ class SimpleTrainer(AbstractTrainer):
         with torch.no_grad():
 
             bar = tqdm(enumerate(data_loader), total=len(data_loader), desc="Eval")
-            for _, (inputs, targets) in bar:
+            for i, (inputs, targets) in bar:
 
                 inputs = inputs.to(self.device)
                 targets = targets.to(self.device)
 
                 outputs = net(inputs)
-                targets = targets.squeeze().long()
-        
+                targets = targets.squeeze().float()
+
                 outputs = outputs.softmax(dim=-1)
                 targets = targets.float().resize_(len(targets), 1)
                 
