@@ -233,9 +233,9 @@ class SimpleTrainer(AbstractTrainer):
 
                 outputs = net(inputs)
 
-                # this is double softmax in my pipeline (me mistake),
-                # I saw it too late but when I remove it, my metrics decrease a little (~1%).
-                # So this is not a bug, but feature :)
+                # This is double softmax in my pipeline (me mistake),
+                # I saw it too late. When I remove it, my metrics increase a little for the best training parameters (AUC +0.001).
+                # So I leave it here then you can reproduce my results
                 outputs = outputs.softmax(dim=-1) 
                 targets = targets.float().resize_(len(targets), 1)
                 
