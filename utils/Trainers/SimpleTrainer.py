@@ -14,6 +14,7 @@ from models.RetinaMNISTModel import Net
 from utils.Datasets.RetinaMNISTDataset import RetinaMNISTDataset
 from utils.Trainers.Abstract import AbstractTrainer
 from utils.Losses.WeightedFocalLoss import WeightedFocalLoss
+from utils.Augmentations.AdvancedAugmentations import AdvancedAugmentations
 
 class SimpleTrainer(AbstractTrainer):
 
@@ -22,6 +23,7 @@ class SimpleTrainer(AbstractTrainer):
         
         self.args = args
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.advanced_augmentations = AdvancedAugmentations(args)
 
         self._seed_torch()
 
@@ -109,6 +111,14 @@ class SimpleTrainer(AbstractTrainer):
 
                 # forward + backward + optimize
                 optimizer.zero_grad()
+
+                # apply mixup and/or cutmix augmentations
+                if self.args['cutmix_rate'] > 0:
+                    inputs, targets = self.advanced_augmentations.cutmix(inputs, targets, self.args['cutmix_rate'])
+                if self.args['mixup_rate'] > 0:
+                    inputs, targets = self.advanced_augmentations.mixup(inputs, targets, self.args['mixup_rate'])
+
+
                 outputs = net(inputs)
                 
                 targets = targets.squeeze().to(torch.float)

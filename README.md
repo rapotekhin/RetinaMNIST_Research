@@ -85,6 +85,21 @@ Resnet18 (28x28):
 
 __ACC: 0.540 -> 0.545__; AUC: 0.759 -> 0.759
 
+## Cutmix augmentation
+best result for prop = 0.5
+Resnet18 (28x28):
+- val_best_acc 0.558, val_best_auc 0.821
+- test_best_acc 0.545, test_best_auc 0.757
+
+ACC: 0.545 -> 0.545; AUC: 0.759 -> 0.757
+
+## Mixup augmentation
+best result for prop = 0.25
+Resnet18 (28x28):
+- val_best_acc 0.558, val_best_auc 0.795
+- test_best_acc 0.51, test_best_auc 0.732
+
+ACC: 0.545 -> 0.510; AUC: 0.759 -> 0.732
 
 # Training ResNet-50 (28) with best parameters
 Resnet50 (28x28):
