@@ -2,6 +2,7 @@ import os, json
 from datetime import datetime
 
 from utils.Trainers.SimpleTrainer import SimpleTrainer
+from utils.Trainers.OrdinalRegressorTrainer import OrdinalRegressorTrainer
 
 class Processor:
 
@@ -15,14 +16,19 @@ class Processor:
         self._set_datetime_to_config()
 
         self.pytorch_simple_trainer = SimpleTrainer(self.args)
+        self.pytorch_ordinal_reg_trainer = OrdinalRegressorTrainer(self.args)
 
     def run(self) -> None:
         """
         Summary: Running the module
         """
-        if self.args['mode'] == 'train':
+        if self.args['mode'] == 'train' and not self.args['ordinal_reg']:
             print("BEGIN TRAINING")
             self._train()
+            self._save_config()
+        elif self.args['ordinal_reg']:
+            print("BEGIN TRAINING")
+            self._train_ord()
             self._save_config()
         else:
             raise ValueError('Unknown mode: {}'.format(self.args['mode']))
@@ -34,7 +40,12 @@ class Processor:
         """
         self.pytorch_simple_trainer.run()
 
-    
+    def _train_ord(self) -> None:
+        """
+        Summary: Trainin the model with user parameters 
+        """
+        self.pytorch_ordinal_reg_trainer.run()
+
     def _save_config(self) -> None:
         """
         Summary: Save the config file

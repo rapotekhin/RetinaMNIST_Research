@@ -21,6 +21,10 @@ if __name__ == '__main__':
     parser.add_argument('--batch_size', dest='batch_size', type=int, help='batch_size', default=128)
     parser.add_argument('--nb_classes', dest='nb_classes', type=int, help='nb_classes', default=5)
 
+
+    parser.add_argument('--ordinal_reg', dest='ordinal_reg', type=lambda x: bool(strtobool(x)), help='ordinal_reg', default=False)
+
+
     # Hyperparameter
     parser.add_argument('--augment', dest='augment', type=lambda x: bool(strtobool(x)), help='augment', default=False)
     parser.add_argument('--dropout', dest='dropout', type=float, help='dropout prop', default=0.0)
